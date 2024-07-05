@@ -11,5 +11,5 @@ add_executable(buckshock-roulette
 
 pico_enable_stdio_usb(buckshock-roulette 1)
 pico_enable_stdio_uart(buckshock-roulette 0)
-target_link_libraries(buckshock-roulette pico_stdlib hardware_pwm pico_time pico_sync pico_multicore)
+target_link_libraries(buckshock-roulette pico_stdlib hardware_pwm pico_time pico_sync pico_multicore pico_rand pico_stdio)
 pico_add_extra_outputs(buckshock-roulette)

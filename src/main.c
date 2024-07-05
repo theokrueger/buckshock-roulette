@@ -1,7 +1,10 @@
+#include <stdio.h>
 #include "pico/stdlib.h"
+#include "pico/stdio.h"
 #include "pico/time.h"
 #include "pico/sync.h"
 #include "pico/multicore.h"
+#include "pico/rand.h"
 #include "hardware/pwm.h"
 
 // pins
@@ -19,12 +22,12 @@ static uint p2_slice = 0;
 #define TRIGGER_BTN 6
 static mutex_t trigger_btn_mutex;
 static bool trigger_btn_pressed = 0;
-#define PUMP_BTN 7
-static mutex_t pump_btn_mutex;
-static bool pump_btn_pressed = 0;
-#define SWAP_BTN 8
-static mutex_t swap_btn_mutex;
-static bool swap_btn_pressed = 0;
+#define CHECK_BTN 7
+static mutex_t check_btn_mutex;
+static bool check_btn_pressed = 0;
+#define EJECT_BTN 8
+static mutex_t eject_btn_mutex;
+static bool eject_btn_pressed= 0;
 
 // consts
 #define SHOCK_TIME 1000 // shock time in ms
@@ -96,13 +99,13 @@ void setup_game_io() {
 	gpio_set_dir(TRIGGER_BTN, GPIO_IN);
 	mutex_init(&trigger_btn_mutex);
 
-	gpio_init(PUMP_BTN);
-	gpio_set_dir(PUMP_BTN, GPIO_IN);
-	mutex_init(&pump_btn_mutex);
+	gpio_init(CHECK_BTN);
+	gpio_set_dir(CHECK_BTN, GPIO_IN);
+	mutex_init(&check_btn_mutex);
 
-	gpio_init(SWAP_BTN);
-	gpio_set_dir(SWAP_BTN, GPIO_IN);
-	mutex_init(&swap_btn_mutex);
+	gpio_init(EJECT_BTN);
+	gpio_set_dir(EJECT_BTN, GPIO_IN);
+	mutex_init(&eject_btn_mutex);
 }
 
 // function called  by second core to allow queued inputs
@@ -113,40 +116,101 @@ void input_loop() {
 			trigger_btn_pressed = true;
 			mutex_exit(&trigger_btn_mutex);
 		}
-	        if (gpio_get(PUMP_BTN)) {
-			mutex_enter_blocking(&pump_btn_mutex);
-			pump_btn_pressed = true;
-			mutex_exit(&pump_btn_mutex);
+	        if (gpio_get(CHECK_BTN)) {
+			mutex_enter_blocking(&check_btn_mutex);
+			check_btn_pressed = true;
+			mutex_exit(&check_btn_mutex);
 		}
-		if (gpio_get(SWAP_BTN)) {
-			mutex_enter_blocking(&swap_btn_mutex);
-			swap_btn_pressed = true;
-			mutex_exit(&swap_btn_mutex);
+		if (gpio_get(EJECT_BTN)) {
+			mutex_enter_blocking(&eject_btn_mutex);
+			eject_btn_pressed= true;
+			mutex_exit(&eject_btn_mutex);
 		}
 		sleep_ms(10);
 	}
 }
 // main loop
 int main() {
+	stdio_init_all();
 	setup_shock();
 	setup_game_io();
 	multicore_launch_core1(input_loop);
+	sleep_ms(3000); // test
 	// full game loop
 	while(true) {
+		printf("starting a new game\n");
 		// reset button states
 		mutex_enter_blocking(&trigger_btn_mutex);
 		trigger_btn_pressed = false;
 		mutex_exit(&trigger_btn_mutex);
 
-		mutex_enter_blocking(&pump_btn_mutex);
-		pump_btn_pressed = false;
-		mutex_exit(&pump_btn_mutex);
+		mutex_enter_blocking(&check_btn_mutex);
+		check_btn_pressed = false;
+		mutex_exit(&check_btn_mutex);
 
-		mutex_enter_blocking(&swap_btn_mutex);
-		swap_btn_pressed = false;
-		mutex_exit(&swap_btn_mutex);
+		mutex_enter_blocking(&eject_btn_mutex);
+		eject_btn_pressed= false;
+		mutex_exit(&eject_btn_mutex);
 
 		// game vars
-		
+		uint player_turn = 1; // 1 for p1, 2 for p2
+
+		uint chamber_size = (get_rand_32() % 7) + 2; // random chamber size 2-8
+		uint lives = chamber_size / 2;
+		uint blanks = chamber_size - lives;
+		// 50% chance to randomly plus or minus lives or blanks
+		if (get_rand_32() % 2 == 0) {
+			if (get_rand_32() % 2 == 0 && blanks > 1) {
+				++lives;
+				--blanks;
+			} else if (lives > 1) {
+				--lives;
+				++blanks;
+			}
+		}
+		bool chamber[chamber_size]; // true for live, false for blank
+		uint rounds_ejected = 0;
+		// load the chamber
+		{
+			uint lives_left = lives;
+			uint blanks_left = blanks;
+			for (int i=0; i < chamber_size; ++i) {
+				if (get_rand_32() % (lives_left + blanks_left) + 1 > blanks_left) {
+					--lives_left;
+					chamber[i] = true;
+				} else {
+					--blanks_left;
+					chamber[i] = false;
+				}
+			}
+			printf("chamber is loaded!\n[");
+			for (int i=0; i<chamber_size; ++i) {
+				printf("%c", chamber[i] ? 'X' : 'O');
+			}
+			printf("]\n");
+		}
+
+		// await input
+		while(rounds_ejected < chamber_size) {
+			// trigger pulled
+			mutex_enter_blocking(&trigger_btn_mutex);
+			if (trigger_btn_pressed) {
+				printf("trigger pulled\n");
+				trigger_btn_pressed = false;
+				mutex_exit(&trigger_btn_mutex);
+				if (chamber[rounds_ejected]) {
+					printf("round was live!\n");
+					shock_p1();
+				} else {
+					printf("round was blank!\n");
+				}
+				++rounds_ejected;
+			} else {
+				mutex_exit(&trigger_btn_mutex);
+			}
+			sleep_ms(100);
+		}
+
+		// proceed to next round
 	}
 }

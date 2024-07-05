@@ -3,3 +3,4 @@
 *.save
 *.FCBak
 /build/
+.#*
