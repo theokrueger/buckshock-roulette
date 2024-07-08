@@ -6,6 +6,10 @@ project(buckshock-roulette)
 pico_sdk_init()
 
 add_executable(buckshock-roulette
+    src/debug.c
+    src/output.c
+    src/input.c
+    src/game.c
     src/main.c
 )
 
