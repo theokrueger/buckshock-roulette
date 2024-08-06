@@ -15,15 +15,17 @@
 int main() {
 	// init
 	stdio_init_all();
+	sleep_ms(3000);
+	printf("Starting...\n");
 	setup_input();
 	setup_outputs();
-	debug_init();
+	/* debug_init(); */
 
 
-	// game start
-	run_game();
+	/* // game start */
+	/* run_game(); */
 
-	// reset the pico after game end
-	watchdog_enable(1, 1);
-	while(1);
+	/* // reset the pico after game end */
+	/* watchdog_enable(1, 1); */
+	/* while(1); */
 }

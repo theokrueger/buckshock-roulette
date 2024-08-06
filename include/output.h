@@ -6,8 +6,8 @@
 
 #include "pico/stdlib.h"
 
-#define PICO_CLOCK_HZ 125000000 // frequence of pico, 125MHz
-#define SHOCK_FREQ_HZ 10650 // shock freqeuency in hertz
+#define PICO_CLOCK_HZ 125000000 // frequence of pico, 125MHz (default)
+#define SHOCK_FREQ_HZ 10650 // shock freqeuency in hz
 #define SHOCK_FREQ_ON_TIME_MS 20 // on time for shock radio wave
 #define SHOCK_FREQ_OFF_TIME_MS 15 // off time for shock radio wave
 

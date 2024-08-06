@@ -1,4 +1,3 @@
-#pragma once
 //! output.c
 //!
 //! Handles LED and shock collar outputs
@@ -9,10 +8,20 @@
 #include "pico/stdio.h"
 #include "pico/time.h"
 #include "hardware/pwm.h"
+
+#include "hardware/i2c.h"
 #include "../include/output.h"
+#include "../include/mcp23008.h"
 
 uint p1_shock_slice;
 uint p2_shock_slice;
+struct MCP23008 p1_live_leds_mcp =  {
+	.address = 0x21,
+	.sda_pin = 0,
+	.scl_pin = 1,
+	.i2c_instance = i2c0,
+	.state = 0b00011111,
+};
 
 void shock(uint slice) {
 	pwm_set_enabled(slice, true);
@@ -85,6 +94,10 @@ void setup_outputs()
 	gpio_init(P2_SHOCK_LED);
 	gpio_set_dir(P2_SHOCK_LED, GPIO_OUT);
 	gpio_put(P2_SHOCK_LED, 0);
+
+	// mcp23008 setup
+	setup_mcp23008(&p1_live_leds_mcp);
+	update_mcp23008_state(&p1_live_leds_mcp);
 
 	// pwm setup
 	int wrap = PICO_CLOCK_HZ / SHOCK_FREQ_HZ;
