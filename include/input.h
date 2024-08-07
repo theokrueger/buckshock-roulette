@@ -6,8 +6,10 @@
 #include "pico/stdlib.h"
 #include "pico/sync.h"
 
+#define INPUT_DEBOUNCE_MS 300
+
 /* BUTTONS */
-#define TRIGGER_BTN 6
+#define TRIGGER_BTN 2
 
 /// Return the queued state of the trigger button
 bool get_trigger_state_queued();
@@ -16,7 +18,7 @@ bool get_trigger_state_queued();
 bool get_trigger_state();
 
 
-#define SLIDE_BTN 6
+#define SLIDE_BTN 3
 
 /// Return the queued state of the slide button
 bool get_slide_state_queued();
@@ -25,7 +27,7 @@ bool get_slide_state_queued();
 bool get_slide_state();
 
 
-#define RACK_BTN 6
+#define RACK_BTN 4
 
 /// Return the queued state of the rack button
 bool get_rack_state_queued();

@@ -3,9 +3,7 @@
 //!
 //! debugging functions
 
-// configurable flags
-#define DEBUG_FUNCS
-#define RUN_INPUT_TEST
-
 /// Call initialisation debug funcs
 void debug_init();
+
+void test_all_io();

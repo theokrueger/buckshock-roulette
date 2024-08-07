@@ -25,26 +25,31 @@ mutex_t pause_input_loop;
 void check_input_loop()
 {
 	while(true) {
+		bool delta = false;
 		mutex_enter_blocking(&pause_input_loop);
 		if (get_trigger_state()) {
 			mutex_enter_blocking(&trigger_btn_mutex);
 			trigger_btn_pressed = true;
 			mutex_exit(&trigger_btn_mutex);
+			delta = true;
 		}
 
 		if (get_slide_state()) {
 			mutex_enter_blocking(&slide_btn_mutex);
 			slide_btn_pressed = true;
 			mutex_exit(&slide_btn_mutex);
+			delta = true;
 		}
 
 		if (get_rack_state()) {
 			mutex_enter_blocking(&rack_btn_mutex);
 			rack_btn_pressed = true;
 			mutex_exit(&rack_btn_mutex);
+			delta = true;
 		}
 		mutex_exit(&pause_input_loop);
-		sleep_ms(50); // input is checked every ~50ms
+		if(delta) sleep_ms(INPUT_DEBOUNCE_MS);
+		sleep_ms(15); // input is checked every ~15ms
 	}
 }
 

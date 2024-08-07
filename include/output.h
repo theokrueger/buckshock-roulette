@@ -15,7 +15,17 @@
 #define P1_SHOCK_LED 14
 
 #define P2_SHOCK_PIN 16
-#define P2_SHOCK_LED 16
+#define P2_SHOCK_LED 17
+
+#define P1_LIVES_SDA 0
+#define P1_LIVES_SCL 1
+#define P1_LIVES_I2C_INSTANCE i2c0
+#define P1_LIVES_ADDRESS 0x21
+
+#define P2_LIVES_SDA 0
+#define P2_LIVES_SCL 1
+#define P2_LIVES_I2C_INSTANCE i2c0
+#define P2_LIVES_ADDRESS 0x22
 
 #define SHOCK_DURATION_MS 1000 // shock duration in ms
 
@@ -33,14 +43,26 @@ void p1_display_lives(uint lives_left);
 /// Display this number of lives left for player 2
 void p2_display_lives(uint lives_left);
 
-#define LIVE_ROUND_SHOT_LED 2
-#define BLANK_ROUND_SHOT_LED 3
+#define LIVE_ROUND_SHOT_LED 6
+#define BLANK_ROUND_SHOT_LED 7
 
 /// Display the last round shot on "shot" LEDs
 void last_round_shot(bool is_live);
+
+/// Clear the last round shot on "shot" LEDs
+void clear_last_shot_led();
 
 /// Turn off all LEDs
 void turn_off_all_leds();
 
 /// Setup outputs
 void setup_outputs();
+
+#define CHAMBER_LIVE_LED 27
+#define CHAMBER_BLANK_LED 26
+
+/// Display live/blank LED in chamber
+void open_chamber(bool is_live);
+
+/// close the chamber
+void close_chamber();
