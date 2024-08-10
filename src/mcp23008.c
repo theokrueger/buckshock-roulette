@@ -11,12 +11,6 @@
 void setup_mcp23008(struct MCP23008 *mcp)
 {
 	printf("Setup MCP23008 with SDA %i and SCL %i at %X\n", mcp->sda_pin, mcp->scl_pin, mcp->address);
-	// pins
-	i2c_init(mcp->i2c_instance, 100 * 1000); // 100khz baud
-	gpio_set_function(mcp->sda_pin, GPIO_FUNC_I2C);
-	gpio_set_function(mcp->scl_pin, GPIO_FUNC_I2C);
-	gpio_pull_up(mcp->sda_pin);
-	gpio_pull_up(mcp->scl_pin);
 
 	// set all pins as output
         char buf[2] = {

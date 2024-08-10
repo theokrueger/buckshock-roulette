@@ -3,45 +3,39 @@
 //!
 //! Handles button input and offloads input checking onto second core
 //! Includes helper functions for accessing button states and auto-managing mutex
-#include "pico/stdlib.h"
-#include "pico/sync.h"
-
-#define INPUT_DEBOUNCE_MS 300
 
 /* BUTTONS */
-#define TRIGGER_BTN 2
-
-/// Return the queued state of the trigger button
-bool get_trigger_state_queued();
+#define TRIGGER_BTN 27
 
 /// Return the current, unqueued state of the trigger button
 bool get_trigger_state();
 
-
-#define SLIDE_BTN 3
-
-/// Return the queued state of the slide button
-bool get_slide_state_queued();
-
-/// Return the current, unqueued state of the slide button
-bool get_slide_state();
-
-
-#define RACK_BTN 4
-
-/// Return the queued state of the rack button
-bool get_rack_state_queued();
+#define RACK_BTN 21
 
 /// Return the current, unqueued state of the rack button
 bool get_rack_state();
 
+#define PLAYER_DIRECTION_SWITCH 19
+
+/// Return the current state of the player direction switch. True for player 2
+bool is_player_2_direction();
+
+#define SUPERCHARGE_SWITCH 26
+
+/// Return the current state of the supercharge switch
+bool get_supercharge_state();
+
+#define TILT_SWITCH 20
+
+/// Return the current state of the tilt switch
+bool get_tilt_state();
 
 /* INPUT CHECKING */
 /// Setup GPIO buttons, and send check input loop to other core
 void setup_input();
 
-/// Pause input checking core
-void pause_input();
+/// Disallow input
+void input_disallow();
 
-/// Resume input checking core
-void resume_input();
+/// Allow input once again
+void input_allow();

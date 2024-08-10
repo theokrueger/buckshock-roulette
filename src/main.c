@@ -7,10 +7,12 @@
 #include "pico/stdlib.h"
 #include "pico/stdio.h"
 #include "hardware/watchdog.h"
+
 #include "../include/input.h"
 #include "../include/output.h"
 #include "../include/debug.h"
 #include "../include/game.h"
+#include "../include/util.h"
 
 int main() {
 	// init
@@ -23,7 +25,7 @@ int main() {
 	// game start
 	run_game();
 
-	sleep_ms(5000);
+	sleep_ms(10000);
 
 	// reset the pico after game end
 	watchdog_enable(1, 1);
