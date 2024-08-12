@@ -29,6 +29,13 @@ void setup_input() {
 
 	gpio_init(TILT_SWITCH);
 	gpio_set_dir(TILT_SWITCH, GPIO_IN);
+
+	gpio_init(INCREASE_LIVES_BTN);
+	gpio_set_dir(INCREASE_LIVES_BTN, GPIO_IN);
+
+	gpio_init(INVERT_BTN);
+	gpio_set_dir(INVERT_BTN, GPIO_IN);
+
 }
 
 bool get_trigger_state()
@@ -50,6 +57,17 @@ bool get_tilt_state()
 	}
 	printf("tilt cnt: %i\n", tot);
 	return tot > 4;
+}
+
+
+bool get_increase_lives_state()
+{
+	return allow_input && gpio_get(INCREASE_LIVES_BTN);
+}
+
+bool get_invert_state()
+{
+	return allow_input && gpio_get(INVERT_BTN);
 }
 
 bool is_player_2_direction()

@@ -14,11 +14,11 @@
 #define SHOCK_DURATION_MS 1000 // shock duration in ms
 
 /* shock LEDs and radio pins */
-#define P1_SHOCK_PIN 15
-#define P1_SHOCK_LED 14
+#define P2_SHOCK_PIN 15
+#define P2_SHOCK_LED 14
 
-#define P2_SHOCK_PIN 16
-#define P2_SHOCK_LED 17
+#define P1_SHOCK_PIN 16
+#define P1_SHOCK_LED 17
 
 /// Shock player 1 for SHOCK_DURATION * mutliplier arg
 void p1_shock(uint multiplier);
@@ -81,7 +81,25 @@ void open_chamber(bool is_live);
 /// Close the chamber
 void close_chamber();
 
+/* State LEDs */
 #define INPUT_ALLOWED_LED 25
 
 /// Set the 'input allowed' LED to a state
 void set_input_allowed_led(bool state);
+
+#define LOADED_LED 4
+
+/// Set the 'loaded' LED to a state
+void set_loaded_led(bool state);
+
+/* info screen */
+#define INFO_SCREEN_SDA 0
+#define INFO_SCREEN_SCL 1
+#define INFO_SCREEN_ADDRESS 0x3c
+#define INFO_SCREEN_WIDTH 128
+#define INFO_SCREEN_HEIGHT 64
+#define INFO_SCREEN_I2C_INSTANCE i2c0
+
+void set_info_text(char *str);
+
+void clear_text();

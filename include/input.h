@@ -30,6 +30,14 @@ bool get_supercharge_state();
 /// Return the current state of the tilt switch
 bool get_tilt_state();
 
+#define INCREASE_LIVES_BTN 2
+
+bool get_increase_lives_state();
+
+#define INVERT_BTN 3
+
+bool get_invert_state();
+
 /* INPUT CHECKING */
 /// Setup GPIO buttons, and send check input loop to other core
 void setup_input();

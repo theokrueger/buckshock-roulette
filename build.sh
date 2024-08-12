@@ -14,3 +14,9 @@ if [[ "$?" != 0 ]]; then
     echo 'build failed at make or cmake!'
     exit
 fi
+
+if [[ "$1" != "" ]]; then
+    echo "Press enter to view pico TTY"
+    read
+    screen /dev/ttyACM* 9600
+fi

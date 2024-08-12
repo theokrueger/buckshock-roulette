@@ -14,6 +14,7 @@
 #include "../include/input.h"
 #include "../include/mcp23008.h"
 #include "../include/util.h"
+#include "../include/ssd1306.h"
 
 uint p1_shock_slice;
 uint p2_shock_slice;
@@ -33,6 +34,8 @@ struct MCP23008 p2_live_leds_mcp =  {
 	.i2c_instance = P2_LIVES_I2C_INSTANCE,
 	.state = 0b00000000,
 };
+
+ssd1306_t info_screen;
 
 void set_input_allowed_led(bool state)
 {
@@ -165,6 +168,8 @@ void turn_off_all_leds()
 	gpio_put(CHAMBER_BLANK_LED, 0);
 	gpio_put(LIVE_ROUND_SHOT_LED, 0);
 	gpio_put(BLANK_ROUND_SHOT_LED, 0);
+	gpio_put(LOADED_LED, 0);
+	gpio_put(INPUT_ALLOWED_LED, 0);
 }
 
 /// Show n live and n blank rounds loaded on some LEDs
@@ -193,6 +198,24 @@ void display_loaded_rounds(uint live, uint blank)
 		sleep_ms(300);
 	}
 	clear_last_shot_led();
+}
+
+void set_loaded_led(bool state)
+{
+	gpio_put(LOADED_LED, state);
+}
+
+void set_info_text(char *str)
+{
+	printf("Setting text to %s", str);
+	ssd1306_clear(&info_screen);
+	ssd1306_draw_string(&info_screen, 8, 24, 2, str);
+	ssd1306_show(&info_screen);
+}
+
+void clear_text()
+{
+	ssd1306_clear(&info_screen);
 }
 
 /// Setup outputs
@@ -227,6 +250,27 @@ void setup_outputs()
 	gpio_set_dir(INPUT_ALLOWED_LED, GPIO_OUT);
 	gpio_put(INPUT_ALLOWED_LED, 0);
 
+	gpio_init(LOADED_LED);
+	gpio_set_dir(LOADED_LED, GPIO_OUT);
+	gpio_put(LOADED_LED, 0);
+
+	// pwm setup
+	int wrap = PICO_CLOCK_HZ / SHOCK_FREQ_HZ;
+	int level = wrap / 2; // 50% on time
+
+	gpio_set_function(P1_SHOCK_PIN, GPIO_FUNC_PWM);
+	p1_shock_slice = pwm_gpio_to_slice_num(P1_SHOCK_PIN);
+	pwm_set_wrap(p1_shock_slice, wrap);
+	pwm_set_chan_level(p1_shock_slice, PWM_CHAN_A, level);
+	pwm_set_enabled(p1_shock_slice, false);
+
+	gpio_set_function(P2_SHOCK_PIN, GPIO_FUNC_PWM);
+	p2_shock_slice = pwm_gpio_to_slice_num(P2_SHOCK_PIN);
+	pwm_set_wrap(p2_shock_slice, wrap);
+	pwm_set_chan_level(p2_shock_slice, PWM_CHAN_B, level);
+	pwm_set_enabled(p2_shock_slice, false);
+
+
 	// mcp23008 setup
 	i2c_init(p1_live_leds_mcp.i2c_instance, 100 * 1000); // 100khz baud
 	gpio_set_function(p1_live_leds_mcp.sda_pin, GPIO_FUNC_I2C);
@@ -240,19 +284,8 @@ void setup_outputs()
 	setup_mcp23008(&p2_live_leds_mcp);
 	update_mcp23008_state(&p2_live_leds_mcp);
 
-	// pwm setup
-	int wrap = PICO_CLOCK_HZ / SHOCK_FREQ_HZ;
-	int level = wrap / 2; // 50% on time
+	info_screen.external_vcc=false;
+	ssd1306_init(&info_screen, INFO_SCREEN_WIDTH, INFO_SCREEN_HEIGHT, INFO_SCREEN_ADDRESS, INFO_SCREEN_I2C_INSTANCE);
+	ssd1306_clear(&info_screen);
 
-	gpio_set_function(P1_SHOCK_PIN, GPIO_FUNC_PWM);
-	p1_shock_slice = pwm_gpio_to_slice_num(P1_SHOCK_PIN);
-	pwm_set_wrap(p1_shock_slice, wrap);
-	pwm_set_chan_level(p1_shock_slice, PWM_CHAN_B, level);
-	pwm_set_enabled(p1_shock_slice, false);
-
-	gpio_set_function(P2_SHOCK_PIN, GPIO_FUNC_PWM);
-	p2_shock_slice = pwm_gpio_to_slice_num(P2_SHOCK_PIN);
-	pwm_set_wrap(p2_shock_slice, wrap);
-	pwm_set_chan_level(p2_shock_slice, PWM_CHAN_A, level);
-	pwm_set_enabled(p2_shock_slice, false);
 }

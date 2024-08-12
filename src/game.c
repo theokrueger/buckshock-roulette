@@ -66,6 +66,15 @@ bool should_damage_p1()
 	}
 }
 
+void display_cell_screen(uint chamber[], uint chamber_size, uint rounds_shot)
+{
+	char str[] = "Round n: x";
+	int target = get_rand_inclusive(rounds_shot, chamber_size - 1);
+	str[6] = '1' + target - rounds_shot;
+	str[9] = chamber[target] ? 'X' : 'O';
+	set_info_text(str);
+}
+
 /// Play a single round of buckshot roulette, return 1 if p1 win, 2 if p2 win, 0 if tie (impossible)
 uint play_round(uint round)
 {
@@ -85,10 +94,15 @@ uint play_round(uint round)
 		printf("Begin subround %u\n", subround + 1);
 		clear_last_shot_led();
 		// load the chamber
-		const uint chamber_size = imax(STARTING_SHELLS +
+		uint chamber_size = imax(STARTING_SHELLS +
+					       (subround > 0) +
 					       (STARTING_SHELLS_INCREMENT * round) +
 					       get_rand_inclusive(0 - STARTING_SHELLS_DEVIATION, STARTING_SHELLS_DEVIATION),
 					       MIN_LIVE_SHELLS + MIN_BLANK_SHELLS);
+
+		if (chamber_size > CHAMBER_SIZE) {
+			chamber_size = CHAMBER_SIZE;
+		}
 		uint chamber[chamber_size];
 		load_chamber(chamber, chamber_size);
 
@@ -96,6 +110,8 @@ uint play_round(uint round)
 		input_allow();
 
 		open_chamber(chamber[shots_fired]);
+		set_loaded_led(true);
+		display_cell_screen(chamber, chamber_size, shots_fired);
 	        while(shots_fired < chamber_size)
 		{
 			if (get_trigger_state()) {
@@ -108,7 +124,9 @@ uint play_round(uint round)
 
 				input_disallow();
 				clear_last_shot_led();
+				clear_text();
 				printf("Trigger Pulled!\n");
+				set_loaded_led(false);
 				if (chamber[shots_fired]) {
 					int damage_val = 1 + get_supercharge_state();
 					if (should_damage_p1()) {
@@ -141,8 +159,10 @@ uint play_round(uint round)
                                 while(!get_rack_state()) sleep_ms(100);
                                 while(get_rack_state()) sleep_ms(100);
                                 printf("Shell rack done!\n");
+				set_loaded_led(true);
 
                                 sleep_ms(1500);
+				display_cell_screen(chamber, chamber_size, shots_fired);
 				open_chamber(chamber[shots_fired]);
 			}
 			else if (get_rack_state()) {
@@ -154,6 +174,8 @@ uint play_round(uint round)
 				if (tot < 8) continue;
 
 				input_disallow();
+				clear_text();
+				set_loaded_led(false);
 
 				close_chamber();
 				printf("Shell racked!\n");
@@ -163,6 +185,31 @@ uint play_round(uint round)
 				input_allow();
 				while(get_rack_state()) sleep_ms(100);
 				open_chamber(chamber[shots_fired]);
+				display_cell_screen(chamber, chamber_size, shots_fired);
+				set_loaded_led(true);
+			}
+			else if (get_invert_state()) {
+				input_disallow();
+				clear_text();
+				set_loaded_led(false);
+				printf("Inverted loaded round!");
+				chamber[shots_fired] = !chamber[shots_fired];
+				sleep_ms(1000);
+				set_loaded_led(true);
+				input_allow();
+			}
+			else if (get_increase_lives_state()) {
+				input_disallow();
+				printf("Added a life to player %i\n", is_player_2_direction() + 1);
+				if (is_player_2_direction() && p2_lives < max_lives ) {
+				        ++p2_lives;
+					p2_display_lives(p2_lives);
+				} else if (p1_lives < max_lives) {
+				        ++p1_lives;
+					p1_display_lives(p1_lives);
+				}
+				sleep_ms(1000);
+				input_allow();
 			}
 		}
 		input_disallow();

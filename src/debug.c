@@ -33,17 +33,25 @@ void test_all_io()
 	input_allow();
 	// inputs
 	printf("Testing inputs...\nPlease press all gun buttons\n");
-	bool tr = 0, rk = 0;
+	bool trigger = 0, rack = 0, invert = 0, lives = 0;
 	while(1) {
 		if (get_trigger_state()) {
 			printf("Trigger pressed!\n");
-			tr = true;
+			trigger = true;
 		}
 		if (get_rack_state()) {
 			printf("Rack pressed!\n");
-			rk = true;
+			rack = true;
 		}
-		if (tr && rk) break;
+		if(get_increase_lives_state()) {
+			printf("Increase Lives pressed!\n");
+			lives = true;
+		}
+		if(get_invert_state()) {
+			printf("Invert pressed!\n");
+			invert = true;
+		}
+		if (trigger && rack && invert && lives) break;
 
 		sleep_ms(100);
 	}
@@ -109,6 +117,17 @@ void test_all_io()
 
 	printf("Chamber Blank LED\n");
 	open_chamber(false);
+	await_any_input();
+	turn_off_all_leds();
+
+	printf("Input allowed LED\n");
+	set_input_allowed_led(true);
+	await_any_input();
+	turn_off_all_leds();
+
+
+	printf("Loaded LED\n");
+	set_loaded_led(true);
 	await_any_input();
 	turn_off_all_leds();
 

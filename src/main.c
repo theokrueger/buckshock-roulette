@@ -25,7 +25,7 @@ int main() {
 	// game start
 	run_game();
 
-	sleep_ms(10000);
+	sleep_ms(5000);
 
 	// reset the pico after game end
 	watchdog_enable(1, 1);
